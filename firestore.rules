@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional)
+    //   - createdAt: timestamp (optional)
+    //
+    // Collection: bookings
+    // Document ID: bookingId
+    // Fields:
+    //   - userId: string (required)
+    //   - flightNumber: string (required)
+    //   - airline: string (required)
+    //   - origin: string (required)
+    //   - destination: string (required)
+    //   - departureTime: timestamp (required)
+    //   - arrivalTime: timestamp (required)
+    //   - price: number (required)
+    //   - currency: string (required)
+    //   - status: string (required, enum: confirmed, cancelled, pending)
+    //   - passengerName: string (required)
+    //   - paymentMethod: string (optional)
+    //   - digitalSignature: string (optional)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // Collection: hotelBookings
+    // Document ID: bookingId
+    // Fields:
+    //   - userId: string (required)
+    //   - hotelName: string (required)
+    //   - location: string (required)
+    //   - checkIn: timestamp (required)
+    //   - checkOut: timestamp (required)
+    //   - guests: number (required)
+    //   - rooms: number (required)
+    //   - price: number (required)
+    //   - currency: string (required)
+    //   - status: string (required, enum: confirmed, cancelled, pending)
+    //   - paymentMethod: string (required)
+    //   - digitalSignature: string (optional)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isBookingOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidBooking(data) {
+      return data.keys().hasAll(['userId', 'flightNumber', 'origin', 'destination', 'departureTime', 'price', 'status', 'passengerName', 'date']) &&
+             data.userId == request.auth.uid &&
+             data.flightNumber is string &&
+             data.origin is string &&
+             data.destination is string &&
+             data.price is number &&
+             data.price > 0 &&
+             data.status in ['confirmed', 'cancelled', 'pending'] &&
+             data.date is string &&
+             (!('digitalSignature' in data) || data.digitalSignature is string);
+    }
+
+    function isValidHotelBooking(data) {
+      return data.keys().hasAll(['userId', 'hotelName', 'location', 'checkIn', 'checkOut', 'price', 'status', 'paymentMethod', 'date']) &&
+             data.userId == request.auth.uid &&
+             data.hotelName is string &&
+             data.location is string &&
+             data.price is number &&
+             data.price > 0 &&
+             data.status in ['confirmed', 'cancelled', 'pending'] &&
+             data.date is string &&
+             (!('digitalSignature' in data) || data.digitalSignature is string);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) &&
+                      request.resource.data.uid == resource.data.uid;
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isBookingOwner();
+      allow create: if isAuthenticated() && isValidBooking(request.resource.data);
+      allow update: if isBookingOwner() && isValidBooking(request.resource.data) &&
+                      request.resource.data.userId == resource.data.userId;
+      allow delete: if isBookingOwner();
+    }
+
+    match /hotelBookings/{bookingId} {
+      allow read: if isBookingOwner();
+      allow create: if isAuthenticated() && isValidHotelBooking(request.resource.data);
+      allow update: if isBookingOwner() && isValidHotelBooking(request.resource.data) &&
+                      request.resource.data.userId == resource.data.userId;
+      allow delete: if isBookingOwner();
+    }
+  }
+}

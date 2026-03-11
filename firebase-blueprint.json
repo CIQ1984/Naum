@@ -1,0 +1,78 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Flight booking record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "flightNumber": { "type": "string" },
+        "airline": { "type": "string" },
+        "origin": { "type": "string" },
+        "destination": { "type": "string" },
+        "departureTime": { "type": "string", "format": "date-time" },
+        "arrivalTime": { "type": "string", "format": "date-time" },
+        "price": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "cancelled", "pending"] },
+        "passengerName": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "digitalSignature": { "type": "string" },
+        "date": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "flightNumber", "origin", "destination", "departureTime", "price"]
+    },
+    "HotelBooking": {
+      "title": "HotelBooking",
+      "description": "Hotel reservation record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "hotelName": { "type": "string" },
+        "location": { "type": "string" },
+        "checkIn": { "type": "string", "format": "date" },
+        "checkOut": { "type": "string", "format": "date" },
+        "guests": { "type": "integer" },
+        "rooms": { "type": "integer" },
+        "price": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "cancelled", "pending"] },
+        "paymentMethod": { "type": "string" },
+        "digitalSignature": { "type": "string" },
+        "date": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "hotelName", "location", "checkIn", "checkOut", "price", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Flight bookings"
+    },
+    "/hotelBookings/{bookingId}": {
+      "schema": "HotelBooking",
+      "description": "Hotel reservations"
+    }
+  }
+}

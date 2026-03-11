@@ -1,0 +1,25 @@
+{
+  "short_name": "QuiboteFamily",
+  "name": "QuiboteFamily - Worldwide Booking",
+  "description": "Reserve voos e hotéis em todo o mundo com a QuiboteFamily.",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/travel/192/192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://picsum.photos/seed/travel/512/512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#059669",
+  "background_color": "#ffffff",
+  "categories": ["travel", "lifestyle"]
+}
